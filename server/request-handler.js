@@ -55,6 +55,7 @@ var requestHandler = function(request, response) {
       //request.on (<input type>, input callback);
       chatStr += chunk.toString();
     });
+
     request.on('end', () => {
       var newChatObj = JSON.parse(chatStr);
       chats.push(newChatObj);
