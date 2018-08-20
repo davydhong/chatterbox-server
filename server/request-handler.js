@@ -13,6 +13,7 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 
 var requestHandler = function(request, response) {
+  var { chats } = require('./Chat.js');
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -46,30 +47,54 @@ var requestHandler = function(request, response) {
     'access-control-max-age': 10 // Seconds.
   };
 
-  // The outgoing status.
-  var statusCode = 200;
+  var requestMethod = request.method;
+  var requestUrl = request.url;
+  if (requestMethod === 'POST' && requestUrl === '/classes/messages') {
+    var chatStr = '';
+    request.on('data', chunk => {
+      //request.on (<input type>, input callback);
+      chatStr += chunk.toString();
+    });
+    request.on('end', () => {
+      var newChatObj = JSON.parse(chatStr);
+      chats.push(newChatObj);
+      var statusCode = 201;
+      var headers = Object.assign({}, defaultCorsHeaders);
+      response.writeHead(statusCode, headers);
+      response.end();
+    });
+  } else if (requestMethod === 'GET' && requestUrl === '/classes/messages') {
+    var statusCode = 200;
+    var headers = Object.assign({}, defaultCorsHeaders);
+    headers['Content-Type'] = 'text/json';
+    response.writeHead(statusCode, headers); //typeof statusCode === number;  typeof headers === object
+    response.end(JSON.stringify({ results: chats }));
+  } else {
+    // The outgoing status.
+    var statusCode = 404;
 
-  // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
+    // See the note below about CORS headers.
+    var headers = Object.assign({}, defaultCorsHeaders);
 
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'text/plain';
+    // Tell the client we are sending them plain text.
+    //
+    // You will need to change this if you are sending something
+    // other than plain text, like JSON or HTML.
+    headers['Content-Type'] = 'text/plain';
 
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
+    // .writeHead() writes to the request line and headers of the response,
+    // which includes the status and all headers.
+    response.writeHead(statusCode, headers);
 
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+    // Make sure to always call response.end() - Node may not send
+    // anything back to the client until you do. The string you pass to
+    // response.end() will be the body of the response - i.e. what shows
+    // up in the browser.
+    //
+    // Calling .end "flushes" the response's internal buffer, forcing
+    // node to actually send all the data over to the client.
+    response.end();
+  }
 };
 
 module.exports.requestHandler = requestHandler;
