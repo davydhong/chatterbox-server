@@ -16,6 +16,36 @@ describe('server', function() {
     });
   });
 
+  //TODO
+  it('should have one more message in chats after POST', function(done) {
+    // GET all chat messages
+    var originalChats, newChats;
+    request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+      // parse body into object with results/chats
+      originalChats = JSON.parse(body).results;
+      // POST new messages
+      var requestParams = {
+        method: 'POST',
+        uri: 'http://127.0.0.1:3000/classes/messages',
+        json: {
+          username: 'Jono',
+          text: 'Do my bidding!'
+        }
+      };
+
+      request(requestParams, function(error, response, body) {
+        // GET again
+        request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+          // parse body again
+          newChats = JSON.parse(body).results;
+          // compare the lengths to see if it is greater by 1
+          expect(newChats.length - originalChats.length).to.equal(1);
+          done();
+        });
+      });
+    });
+  });
+
   it('should send back an object', function(done) {
     request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
       var parsedBody = JSON.parse(body);
@@ -34,11 +64,13 @@ describe('server', function() {
   });
 
   it('should accept POST requests to /classes/messages', function(done) {
-    var requestParams = {method: 'POST',
+    var requestParams = {
+      method: 'POST',
       uri: 'http://127.0.0.1:3000/classes/messages',
       json: {
         username: 'Jono',
-        text: 'Do my bidding!'}
+        text: 'Do my bidding!'
+      }
     };
 
     request(requestParams, function(error, response, body) {
@@ -48,11 +80,13 @@ describe('server', function() {
   });
 
   it('should respond with messages that were previously posted', function(done) {
-    var requestParams = {method: 'POST',
+    var requestParams = {
+      method: 'POST',
       uri: 'http://127.0.0.1:3000/classes/messages',
       json: {
         username: 'Jono',
-        text: 'Do my bidding!'}
+        text: 'Do my bidding!'
+      }
     };
 
     request(requestParams, function(error, response, body) {
@@ -72,6 +106,4 @@ describe('server', function() {
       done();
     });
   });
-
-
 });
