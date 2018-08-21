@@ -28,9 +28,7 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  console.log(
-    'Serving request type ' + request.method + ' for url ' + request.url
-  );
+  console.log('Serving request type ' + request.method + ' for url ' + request.url);
   // These headers will allow Cross-Origin Resource Sharing (CORS).
   // This code allows this server to talk to websites that
   // are on different domains, for instance, your chat client.
@@ -49,6 +47,7 @@ var requestHandler = function(request, response) {
 
   var requestMethod = request.method;
   var requestUrl = request.url;
+  console.log(requestMethod, requestUrl);
   if (requestMethod === 'POST' && requestUrl === '/classes/messages') {
     var chatStr = '';
     request.on('data', chunk => {
@@ -64,7 +63,7 @@ var requestHandler = function(request, response) {
       response.writeHead(statusCode, headers);
       response.end();
     });
-  } else if (requestMethod === 'GET' && requestUrl === '/classes/messages') {
+  } else if ((requestMethod === 'GET' || requestMethod === 'OPTIONS') && requestUrl === '/classes/messages') {
     var statusCode = 200;
     var headers = Object.assign({}, defaultCorsHeaders);
     headers['Content-Type'] = 'text/json';
